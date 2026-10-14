@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Прототип PRO Инсульт</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap">
+<style>
+/* Макет: телефон по центру страницы, внутри — экраны с нижней навигацией.
+   Роль (пациент / врач) меняет только акцентные токены. */
+:root{
+  --bg:#eaf1f8; --page-ink:#2b4256;
+  --surface:#ffffff; --surface-2:#f3f8fc; --sunken:#e9f1f8;
+  --ink:#122d42; --ink-soft:#4e6c82; --ink-mute:#89a4b8;
+  --line:#dde9f2; --shadow:rgba(16,70,105,.14);
+  --pat:#1181c4; --pat-soft:#dcefFB; --pat-deep:#0b5c8f;
+  --doc:#71854d; --doc-soft:#eaf0dd; --doc-deep:#56683a;
+  --ok:#2e9e6b; --warn:#c98a1b; --crit:#cf5340;
+  --accent:var(--pat); --accent-soft:var(--pat-soft); --accent-deep:var(--pat-deep);
+  --font-head:"Golos Text","Segoe UI",system-ui,sans-serif;
+  --font-body:"Manrope","Segoe UI",system-ui,sans-serif;
+  --r-l:26px; --r-m:18px; --r-s:12px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0c1620; --page-ink:#a8c2d6;
+    --surface:#15232f; --surface-2:#1b2d3c; --sunken:#101d28;
+    --ink:#e8f2f9; --ink-soft:#a6c0d2; --ink-mute:#6f8fa5;
+    --line:#24394a; --shadow:rgba(0,0,0,.5);
+    --pat:#45aee8; --pat-deep:#8ad0f5;
+    --pat-soft:#16344a; --doc:#9fb573; --doc-soft:#28331c; --doc-deep:#c3d79a;
+    --ok:#4cc08a; --warn:#e0a63c; --crit:#e8705c;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0c1620; --page-ink:#a8c2d6;
+  --surface:#15232f; --surface-2:#1b2d3c; --sunken:#101d28;
+  --ink:#e8f2f9; --ink-soft:#a6c0d2; --ink-mute:#6f8fa5;
+  --line:#24394a; --shadow:rgba(0,0,0,.5);
+  --pat:#45aee8; --pat-soft:#16344a; --pat-deep:#8ad0f5;
+  --doc:#9fb573; --doc-soft:#28331c; --doc-deep:#c3d79a;
+  --ok:#4cc08a; --warn:#e0a63c; --crit:#e8705c;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{
+  background:var(--bg); color:var(--page-ink);
+  font-family:var(--font-body); margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:22px 30px;
+  display:flex; flex-direction:column; align-items:center; gap:16px;
+}
+a{color:inherit; text-decoration:none}
+
+/* ── шапка страницы ─────────────────────────────────────── */
+.top{width:100%; max-width:430px; display:flex; flex-direction:column; gap:12px}
+.brand{display:flex; align-items:center; gap:10px}
+.brand .dot{width:30px;height:30px;border-radius:10px;background:var(--pat);
+  display:grid;place-items:center;color:#fff;font-family:var(--font-head);
+  font-weight:700;font-size:13px}
+.brand b{font-family:var(--font-head); font-size:17px; color:var(--ink); font-weight:700}
+.brand span{font-size:12px; color:var(--ink-mute)}
+.roles{display:flex; gap:6px; background:var(--surface); border:1px solid var(--line);
+  border-radius:999px; padding:4px}
+.roles a{flex:1; text-align:center; padding:8px 10px; border-radius:999px;
+  font-size:13px; font-weight:600; color:var(--ink-soft)}
+.roles a.on{background:var(--accent); color:#fff}
+
+/* ── телефон ────────────────────────────────────────────── */
+.phone{
+  width:100%; max-width:430px; height:min(760px,78vh); min-height:560px;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r-l);
+  box-shadow:0 26px 60px -24px var(--shadow); overflow:hidden;
+  display:flex; flex-direction:column; position:relative;
+}
+.statusbar{display:flex; justify-content:space-between; align-items:center;
+  padding:10px 18px 2px; font-size:11px; color:var(--ink-mute);
+  font-variant-numeric:tabular-nums}
+.appbar{display:flex; align-items:center; gap:10px; padding:8px 18px 12px}
+.appbar .ava{width:34px;height:34px;border-radius:12px;background:var(--accent-soft);
+  display:grid;place-items:center;color:var(--accent-deep);font-weight:700;font-size:13px}
+.appbar h1{font-family:var(--font-head); font-size:16px; margin:0; color:var(--ink); font-weight:700}
+.appbar p{margin:0; font-size:11px; color:var(--ink-mute)}
+.appbar .bell{margin-left:auto; width:34px;height:34px;border-radius:12px;
+  background:var(--surface-2); display:grid; place-items:center; color:var(--ink-soft);
+  border:1px solid var(--line); font-size:14px}
+
+.screens{flex:1; overflow-y:auto; overflow-x:hidden; padding:2px 16px 18px;
+  scrollbar-width:thin}
+.screen{display:flex; flex-direction:column; gap:12px}
+
+/* ── карточки ──────────────────────────────────────────── */
+.card{background:var(--surface-2); border:1px solid var(--line);
+  border-radius:var(--r-m); padding:14px}
+.card.hero{background:var(--accent-soft); border-color:transparent}
+.card h2{font-family:var(--font-head); font-size:14px; margin:0 0 6px; color:var(--ink); font-weight:600}
+.card p{margin:0; font-size:12.5px; line-height:1.5; color:var(--ink-soft)}
+.eyebrow{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--accent-deep); font-weight:700; margin:0 0 4px}
+.sec-title{font-family:var(--font-head); font-size:13px; font-weight:600; color:var(--ink);
+  margin:6px 2px 0}
+
+.ring-row{display:flex; align-items:center; gap:14px}
+.ring{width:84px;height:84px;flex:none;position:relative}
+.ring svg{transform:rotate(-90deg)}
+.ring b{position:absolute; inset:0; display:grid; place-items:center;
+  font-family:var(--font-head); font-size:19px; color:var(--ink); font-weight:700;
+  font-variant-numeric:tabular-nums}
+.ring-row .meta{min-width:0}
+.ring-row .meta h3{font-family:var(--font-head); margin:0 0 4px; font-size:15px; color:var(--ink)}
+.ring-row .meta p{margin:0; font-size:12px; color:var(--ink-soft); line-height:1.45}
+
+.bars{display:flex; align-items:flex-end; gap:5px; height:56px; margin-top:10px}
+.bars i{flex:1; background:var(--accent); border-radius:4px 4px 2px 2px; opacity:.85;
+  min-width:0}
+.bars i.off{background:var(--line); opacity:1}
+.legend{display:flex; justify-content:space-between; font-size:10.5px;
+  color:var(--ink-mute); margin-top:6px}
+
+.kpis{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px}
+.kpi{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-s);
+  padding:10px 9px; min-width:0}
+.kpi b{display:block; font-family:var(--font-head); font-size:17px; color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.kpi span{font-size:10.5px; color:var(--ink-mute); line-height:1.3; display:block}
+
+.task{display:flex; gap:11px; align-items:flex-start; background:var(--surface);
+  border:1px solid var(--line); border-radius:var(--r-m); padding:12px; cursor:pointer;
+  text-align:left; width:100%; font:inherit; color:inherit}
+.task:focus-visible,a:focus-visible,button:focus-visible{outline:2px solid var(--accent);
+  outline-offset:2px}
+.tick{width:22px;height:22px;flex:none;border-radius:50%;border:2px solid var(--line);
+  display:grid;place-items:center;color:#fff;font-size:12px;margin-top:1px;transition:.15s}
+.task[aria-pressed="true"] .tick{background:var(--ok); border-color:var(--ok)}
+.task[aria-pressed="true"] .t-name{text-decoration:line-through; color:var(--ink-mute)}
+.t-name{font-weight:600; font-size:13px; color:var(--ink); display:block}
+.t-meta{font-size:11.5px; color:var(--ink-mute); display:block; margin-top:3px}
+.pill{display:inline-block; font-size:10px; font-weight:700; letter-spacing:.04em;
+  padding:3px 8px; border-radius:999px; background:var(--accent-soft);
+  color:var(--accent-deep); margin-top:6px}
+.pill.warn{background:color-mix(in srgb,var(--warn) 18%,transparent); color:var(--warn)}
+.pill.crit{background:color-mix(in srgb,var(--crit) 16%,transparent); color:var(--crit)}
+.pill.ok{background:color-mix(in srgb,var(--ok) 16%,transparent); color:var(--ok)}
+
+.msg{display:flex; gap:9px; align-items:flex-end}
+.msg .b{max-width:78%; padding:10px 12px; border-radius:14px; font-size:12.5px;
+  line-height:1.45; background:var(--surface); border:1px solid var(--line); color:var(--ink)}
+.msg.me{flex-direction:row-reverse}
+.msg.me .b{background:var(--accent); border-color:transparent; color:#fff}
+.msg .who{font-size:10px; color:var(--ink-mute); margin-bottom:3px; display:block}
+.composer{display:flex; gap:8px; margin-top:4px}
+.composer input{flex:1; min-width:0; border:1px solid var(--line); background:var(--surface);
+  border-radius:999px; padding:10px 14px; font:inherit; font-size:12.5px; color:var(--ink)}
+.composer button{border:0; background:var(--accent); color:#fff; border-radius:999px;
+  padding:0 16px; font-weight:700; font-size:13px; cursor:pointer}
+
+.mascot{display:flex; gap:10px; align-items:flex-start; background:var(--surface);
+  border:1px dashed var(--accent); border-radius:var(--r-m); padding:12px}
+.mascot svg{flex:none}
+.mascot p{margin:0; font-size:12px; color:var(--ink-soft); line-height:1.45}
+.mascot b{color:var(--ink); font-family:var(--font-head); font-size:12.5px}
+
+.row{display:flex; align-items:center; gap:11px; background:var(--surface);
+  border:1px solid var(--line); border-radius:var(--r-m); padding:11px 12px}
+.row .ava2{width:34px;height:34px;border-radius:12px;background:var(--accent-soft);
+  color:var(--accent-deep); display:grid; place-items:center; font-weight:700; font-size:12px; flex:none}
+.row .info{flex:1; min-width:0}
+.row .info b{display:block; font-size:13px; color:var(--ink); font-weight:600}
+.row .info span{display:block; font-size:11.5px; color:var(--ink-mute); margin-top:2px}
+.row .num{font-family:var(--font-head); font-size:14px; color:var(--ink);
+  font-variant-numeric:tabular-nums}
+.chips{display:flex; gap:6px; flex-wrap:wrap}
+.chip{border:1px solid var(--line); background:var(--surface); color:var(--ink-soft);
+  border-radius:999px; padding:6px 11px; font-size:11.5px; font-weight:600; cursor:pointer;
+  font-family:inherit}
+.chip[aria-pressed="true"]{background:var(--accent); color:#fff; border-color:transparent}
+
+.timeline{display:flex; flex-direction:column; gap:0}
+.tl{display:flex; gap:11px; padding-bottom:12px; position:relative}
+.tl:not(:last-child)::before{content:""; position:absolute; left:23px; top:24px; bottom:0;
+  width:2px; background:var(--line)}
+.tl .t{font-family:var(--font-head); font-size:12px; color:var(--ink-mute); width:38px;
+  flex:none; font-variant-numeric:tabular-nums; padding-top:4px}
+.tl .d{flex:1; min-width:0; background:var(--surface); border:1px solid var(--line);
+  border-radius:var(--r-s); padding:10px 11px}
+.tl .d b{display:block; font-size:12.5px; color:var(--ink)}
+.tl .d span{display:block; font-size:11px; color:var(--ink-mute); margin-top:2px}
+
+.grid2{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px}
+.tile{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-m);
+  padding:12px; min-width:0}
+.tile b{display:block; font-family:var(--font-head); font-size:13px; color:var(--ink)}
+.tile span{display:block; font-size:11.5px; color:var(--ink-mute); margin-top:3px; line-height:1.4}
+
+.btn{display:block; width:100%; border:0; border-radius:999px; padding:13px;
+  background:var(--accent); color:#fff; font-weight:700; font-size:13.5px; cursor:pointer;
+  font-family:inherit; text-align:center}
+.btn.ghost{background:transparent; border:1px solid var(--accent); color:var(--accent-deep)}
+
+.spark{width:100%; height:62px; display:block}
+
+/* ── нижняя навигация ───────────────────────────────────── */
+.tabbar{display:flex; gap:2px; padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px));
+  background:var(--surface); border-top:1px solid var(--line)}
+.tabbar a{flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;
+  padding:6px 2px; border-radius:14px; color:var(--ink-mute); font-size:9.5px;
+  font-weight:600; text-align:center; line-height:1.15}
+.tabbar a.on{color:var(--accent-deep); background:var(--accent-soft)}
+.tabbar a.mid{background:var(--accent); color:#fff; margin-top:-16px; padding-top:12px;
+  box-shadow:0 10px 20px -10px var(--shadow)}
+.tabbar a.mid.on{background:var(--accent); color:#fff}
+.tabbar svg{width:20px;height:20px;flex:none}
+
+.note{max-width:430px; width:100%; font-size:11.5px; color:var(--ink-mute); line-height:1.5;
+  text-align:center}
+.note code{background:var(--surface); border:1px solid var(--line); border-radius:6px;
+  padding:1px 5px; font-size:11px; color:var(--ink-soft)}
+@media (max-width:420px){
+  .phone{height:min(720px,86vh)}
+  .kpis{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important; animation:none!important}}
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="brand">
+    <div class="dot">PI</div>
+    <div>
+      <b>PRO Инсульт</b><br>
+      <span>кликабельный прототип · демо-данные</span>
+    </div>
+  </div>
+  <nav class="roles" id="roles">
+    <a href="#p-home" data-role="patient">Пациент</a>
+    <a href="#d-patients" data-role="doctor">Врач</a>
+  </nav>
+</div>
+
+<div class="phone" id="app" data-role="patient">
+  <div class="statusbar"><span>9:41</span><span>PRO Инсульт</span><span>82%</span></div>
+
+  <div class="appbar">
+    <div class="ava" id="ava">А</div>
+    <div>
+      <h1 id="bar-title">Рабочий стол</h1>
+      <p id="bar-sub">4-я неделя реабилитации</p>
+    </div>
+    <div class="bell">●</div>
+  </div>
+
+  <div class="screens" id="screens">
+
+    <!-- ═══ ПАЦИЕНТ ═══ -->
+    <section class="screen" data-screen="p-home" hidden>
+      <div class="card hero">
+        <div class="ring-row">
+          <div class="ring">
+            <svg viewBox="0 0 84 84" width="84" height="84" aria-hidden="true">
+              <circle cx="42" cy="42" r="35" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="9"/>
+              <circle cx="42" cy="42" r="35" fill="none" stroke="currentColor" stroke-width="9"
+                      stroke-linecap="round" stroke-dasharray="220" stroke-dashoffset="73"
+                      style="color:var(--accent)"/>
+            </svg>
+            <b>2/3</b>
+          </div>
+          <div class="meta">
+            <h3>Занятия на сегодня</h3>
+            <p>Осталось речевое задание — 10 минут. Лучшее время по вашей статистике: до 16:00.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">Сообщение от врача</p>
+        <h2>Ирина Соколова, невролог</h2>
+        <p>«Амплитуда в локте выросла, продолжаем. Со среды добавляю упражнение на кисть — посмотрите видео в занятиях».</p>
+        <a class="btn ghost" href="#p-chat" style="margin-top:10px">Ответить в чате</a>
+      </div>
+
+      <h3 class="sec-title">Быстрая аналитика за 14 дней</h3>
+      <div class="card">
+        <div class="kpis">
+          <div class="kpi"><b>11</b><span>занятий из 14</span></div>
+          <div class="kpi"><b>86%</b><span>техника по камере</span></div>
+          <div class="kpi"><b>+12°</b><span>объём сгибания</span></div>
+        </div>
+        <div class="bars" aria-hidden="true">
+          <i style="height:40%"></i><i style="height:62%"></i><i class="off" style="height:14%"></i>
+          <i style="height:55%"></i><i style="height:70%"></i><i style="height:66%"></i>
+          <i class="off" style="height:14%"></i><i style="height:74%"></i><i style="height:80%"></i>
+          <i style="height:68%"></i><i style="height:88%"></i><i style="height:76%"></i>
+          <i style="height:92%"></i><i style="height:84%"></i>
+        </div>
+        <div class="legend"><span>1 окт</span><span>14 окт</span></div>
+      </div>
+
+      <div class="mascot">
+        <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+          <circle cx="17" cy="17" r="15" fill="var(--accent-soft)"/>
+          <circle cx="12" cy="15" r="2.4" fill="var(--accent-deep)"/>
+          <circle cx="22" cy="15" r="2.4" fill="var(--accent-deep)"/>
+          <path d="M11 22c3 3 9 3 12 0" stroke="var(--accent-deep)" stroke-width="2"
+                fill="none" stroke-linecap="round"/>
+        </svg>
+        <p><b>Нейра, ассистент.</b> Голос, подсказки и напоминания. «Давайте начнём с разминки — я посчитаю повторения вслух».</p>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="p-plan" hidden>
+      <div class="chips" role="group" aria-label="Период">
+        <button class="chip" aria-pressed="true">Сегодня</button>
+        <button class="chip" aria-pressed="false">Неделя</button>
+        <button class="chip" aria-pressed="false">Всё</button>
+      </div>
+
+      <h3 class="sec-title">Моторика</h3>
+      <button class="task" aria-pressed="true">
+        <span class="tick">✓</span>
+        <span><span class="t-name">Сгибание и разгибание в локте</span>
+        <span class="t-meta">3 подхода × 12 · камера считает повторения</span>
+        <span class="pill ok">Выполнено · техника 91%</span></span>
+      </button>
+      <button class="task" aria-pressed="true">
+        <span class="tick">✓</span>
+        <span><span class="t-name">Удержание предмета в кисти</span>
+        <span class="t-meta">4 подхода × 30 секунд</span>
+        <span class="pill ok">Выполнено · техника 78%</span></span>
+      </button>
+
+      <h3 class="sec-title">Речь</h3>
+      <button class="task" aria-pressed="false">
+        <span class="tick">✓</span>
+        <span><span class="t-name">Автоматизированные ряды</span>
+        <span class="t-meta">10 минут · с голосовым сопровождением</span>
+        <span class="pill">Назначено на сегодня</span></span>
+      </button>
+
+      <h3 class="sec-title">Когнитивные функции</h3>
+      <button class="task" aria-pressed="false">
+        <span class="tick">✓</span>
+        <span><span class="t-name">Поиск отличий, уровень 3</span>
+        <span class="t-meta">8 минут · фиксируется время ответа</span>
+        <span class="pill">Завтра</span></span>
+      </button>
+
+      <button class="btn" type="button" data-demo="Запуск занятия — в прототипе не реализован">
+        Начать занятие
+      </button>
+    </section>
+
+    <section class="screen" data-screen="p-chat" hidden>
+      <div class="msg"><span class="b"><span class="who">Ирина Соколова, невролог</span>
+        Добрый день! Посмотрела отчёт за неделю: пропусков нет, это главное.</span></div>
+      <div class="msg"><span class="b"><span class="who">Ирина Соколова, невролог</span>
+        К среде добавлю упражнение на кисть. Если появится боль — отметьте в дневнике и остановитесь.</span></div>
+      <div class="msg me"><span class="b">Спасибо! Вчера было тяжеловато, но без боли.</span></div>
+      <div class="mascot">
+        <svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true">
+          <circle cx="17" cy="17" r="15" fill="var(--accent-soft)"/>
+          <circle cx="12" cy="15" r="2.4" fill="var(--accent-deep)"/>
+          <circle cx="22" cy="15" r="2.4" fill="var(--accent-deep)"/>
+          <path d="M11 21c3 3 9 3 12 0" stroke="var(--accent-deep)" stroke-width="2"
+                fill="none" stroke-linecap="round"/>
+        </svg>
+        <p><b>Нейра:</b> могу напомнить о занятии в 15:30 и прочитать инструкцию вслух.</p>
+      </div>
+      <form class="composer" id="chatForm">
+        <label for="chatInput" class="visually-hidden" style="position:absolute;left:-9999px">Сообщение</label>
+        <input id="chatInput" placeholder="Написать врачу…" autocomplete="off">
+        <button type="submit">→</button>
+      </form>
+    </section>
+
+    <section class="screen" data-screen="p-stats" hidden>
+      <div class="card hero">
+        <p class="eyebrow">Динамика</p>
+        <h2>Объём сгибания в локте</h2>
+        <svg class="spark" viewBox="0 0 300 62" preserveAspectRatio="none" aria-label="График: рост с 72 до 95 градусов">
+          <polyline points="0,50 25,47 50,44 75,45 100,38 125,34 150,33 175,28 200,24 225,22 250,16 275,12 300,9"
+                    fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="300" cy="9" r="4" fill="var(--accent)"/>
+        </svg>
+        <p>72° → 95° за 4 недели. Замер по камере, среднее за 3 попытки.</p>
+      </div>
+      <div class="grid2">
+        <div class="tile"><b>Шкала Рэнкина</b><span>3 → 2 балла, оценка врача 12 окт</span></div>
+        <div class="tile"><b>Сила кисти</b><span>3/5 по MRC, без динамики</span></div>
+        <div class="tile"><b>Темп речи</b><span>+18% к первой неделе</span></div>
+        <div class="tile"><b>Ошибки в заданиях</b><span>−24% за 14 дней</span></div>
+      </div>
+      <h3 class="sec-title">Дневник самочувствия</h3>
+      <div class="card">
+        <p>Сегодня: усталость умеренная, боли нет, головокружения нет.</p>
+        <div class="chips" style="margin-top:10px">
+          <button class="chip" aria-pressed="true">Хорошо</button>
+          <button class="chip" aria-pressed="false">Устал</button>
+          <button class="chip" aria-pressed="false">Болит</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" data-screen="p-wins" hidden>
+      <div class="card hero">
+        <div class="ring-row">
+          <div class="ring">
+            <svg viewBox="0 0 84 84" width="84" height="84" aria-hidden="true">
+              <circle cx="42" cy="42" r="35" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="9"/>
+              <circle cx="42" cy="42" r="35" fill="none" stroke="currentColor" stroke-width="9"
+                      stroke-linecap="round" stroke-dasharray="220" stroke-dashoffset="30"
+                      style="color:var(--accent)"/>
+            </svg>
+            <b>11</b>
+          </div>
+          <div class="meta">
+            <h3>Дней подряд</h3>
+            <p>Лучшая серия за всё время — 14 дней. До повторения осталось три занятия.</p>
+          </div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="tile"><b>Первая неделя</b><span>7 занятий без пропусков</span></div>
+        <div class="tile"><b>Точность 90%</b><span>техника в моторных заданиях</span></div>
+        <div class="tile"><b>Голос включён</b><span>20 занятий с ассистентом</span></div>
+        <div class="tile"><b>Отчёт врачу</b><span>4 отправленных отчёта</span></div>
+      </div>
+      <h3 class="sec-title">Партнёры программы</h3>
+      <div class="row"><div class="ava2">К</div><div class="info"><b>Клиника-партнёр</b>
+        <span>площадка пилотного исследования</span></div></div>
+      <div class="row"><div class="ava2">Э</div><div class="info"><b>Экспертная группа</b>
+        <span>невролог, логопед, реабилитолог, нейропсихолог</span></div></div>
+    </section>
+
+    <!-- ═══ ВРАЧ ═══ -->
+    <section class="screen" data-screen="d-patients" hidden>
+      <div class="chips" role="group" aria-label="Фильтр">
+        <button class="chip" aria-pressed="true">Все · 14</button>
+        <button class="chip" aria-pressed="false">Требуют внимания · 3</button>
+      </div>
+      <div class="row"><div class="ava2">АК</div>
+        <div class="info"><b>А. К., 62 года</b><span>5-я неделя · моторика и речь</span>
+        <span class="pill crit">Пропуск 2 дня</span></div><div class="num">61%</div></div>
+      <div class="row"><div class="ava2">МП</div>
+        <div class="info"><b>М. П., 58 лет</b><span>3-я неделя · моторика</span>
+        <span class="pill warn">Техника ниже 70%</span></div><div class="num">78%</div></div>
+      <div class="row"><div class="ava2">ЛС</div>
+        <div class="info"><b>Л. С., 67 лет</b><span>7-я неделя · когнитивный блок</span>
+        <span class="pill ok">Идёт по плану</span></div><div class="num">94%</div></div>
+      <div class="row"><div class="ava2">ВД</div>
+        <div class="info"><b>В. Д., 71 год</b><span>2-я неделя · адаптация</span>
+        <span class="pill ok">Идёт по плану</span></div><div class="num">88%</div></div>
+      <a class="btn ghost" href="#d-schedule">Кто сдал задания сегодня</a>
+    </section>
+
+    <section class="screen" data-screen="d-inbox" hidden>
+      <h3 class="sec-title">Заявки на ведение</h3>
+      <div class="card">
+        <p class="eyebrow">Новая заявка</p>
+        <h2>Н. Т., 64 года · выписка 9 октября</h2>
+        <p>Ишемический инсульт, левосторонний гемипарез. Запрос: домашняя программа моторики и контроль техники.</p>
+        <div style="display:flex; gap:8px; margin-top:10px">
+          <button class="btn" type="button" data-demo="Заявка принята — демо">Принять</button>
+          <button class="btn ghost" type="button" data-demo="Заявка отклонена — демо">Отклонить</button>
+        </div>
+      </div>
+      <h3 class="sec-title">Письма</h3>
+      <div class="row"><div class="ava2">МП</div><div class="info"><b>М. П.</b>
+        <span>«Больно поднимать руку выше плеча» · 2 часа назад</span></div></div>
+      <div class="row"><div class="ava2">ЛС</div><div class="info"><b>Л. С.</b>
+        <span>«Можно ли заниматься в очках?» · вчера</span></div></div>
+      <div class="row"><div class="ava2">АК</div><div class="info"><b>А. К.</b>
+        <span>«Уезжаю на три дня, что делать с занятиями» · вчера</span></div></div>
+    </section>
+
+    <section class="screen" data-screen="d-schedule" hidden>
+      <div class="card hero">
+        <p class="eyebrow">Сегодня, 14 октября</p>
+        <h2>9 занятий запланировано, 6 выполнено</h2>
+        <p>Три пациента не приступали к заданиям после 15:00 — система отправила напоминание.</p>
+      </div>
+      <h3 class="sec-title">Расписание</h3>
+      <div class="timeline">
+        <div class="tl"><div class="t">09:30</div><div class="d"><b>Л. С. · когнитивный блок</b>
+          <span>Выполнено, 18 минут, ошибок 4</span></div></div>
+        <div class="tl"><div class="t">11:00</div><div class="d"><b>В. Д. · моторика</b>
+          <span>Выполнено, техника 83%</span></div></div>
+        <div class="tl"><div class="t">14:00</div><div class="d"><b>М. П. · моторика, кисть</b>
+          <span>Выполнено частично — 2 подхода из 4</span></div></div>
+        <div class="tl"><div class="t">16:30</div><div class="d"><b>А. К. · речь</b>
+          <span>Не начато, напоминание отправлено</span></div></div>
+      </div>
+      <h3 class="sec-title">Сложные задания недели</h3>
+      <div class="row"><div class="ava2" style="color:var(--crit)">✗</div>
+        <div class="info"><b>Удержание предмета, 30 сек</b><span>не прошли 4 пациента из 14</span></div></div>
+      <div class="row"><div class="ava2" style="color:var(--crit)">✗</div>
+        <div class="info"><b>Автоматизированные ряды</b><span>не прошли 3 пациента из 14</span></div></div>
+      <div class="row"><div class="ava2" style="color:var(--ok)">✓</div>
+        <div class="info"><b>Разминка плечевого пояса</b><span>прошли все</span></div></div>
+    </section>
+
+    <section class="screen" data-screen="d-profile" hidden>
+      <div class="card hero">
+        <p class="eyebrow">Страница врача</p>
+        <h2>Ирина Соколова</h2>
+        <p>Невролог, реабилитолог · 14 пациентов в программе · стаж 11 лет.</p>
+      </div>
+      <div class="grid2">
+        <div class="tile"><b>14</b><span>пациентов под наблюдением</span></div>
+        <div class="tile"><b>86%</b><span>средняя приверженность</span></div>
+        <div class="tile"><b>42</b><span>отчёта за месяц</span></div>
+        <div class="tile"><b>3</b><span>заключения ждут подписи</span></div>
+      </div>
+      <h3 class="sec-title">Подписи и заключения</h3>
+      <div class="row"><div class="info"><b>Заключение по А. К.</b>
+        <span>4 недели программы · готово к подписи</span></div><div class="num">→</div></div>
+      <div class="row"><div class="info"><b>Выписной эпикриз Л. С.</b>
+        <span>черновик, нужна правка</span></div><div class="num">→</div></div>
+      <button class="btn" type="button" data-demo="Подписание — в прототипе не реализовано">
+        Подписать заключение
+      </button>
+    </section>
+  </div>
+
+  <nav class="tabbar" id="tabbar"></nav>
+</div>
+
+<p class="note" id="note">
+  Прототип: нижние кнопки — обычные ссылки, адрес меняется (<code>#p-plan</code>, <code>#d-inbox</code>),
+  работают «назад» и «вперёд» в браузере. Данные вымышленные.
+</p>
+
+<script>
+(function () {
+  var ICONS = {
+    home:'<path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"/>',
+    list:'<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+    chat:'<path d="M21 11.5a8.4 8.4 0 0 1-9 8.4L3 21l1.1-4.2A8.4 8.4 0 1 1 21 11.5z"/>',
+    chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+    star:'<path d="m12 3 2.6 5.6 6.1.8-4.5 4.2 1.2 6.1L12 16.8 6.6 19.7l1.2-6.1L3.3 9.4l6.1-.8z"/>',
+    users:'<path d="M16 20v-2a4 4 0 0 0-8 0v2M12 11a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M21 20v-1.6a3.3 3.3 0 0 0-2.5-3.2"/>',
+    mail:'<path d="M3 6h18v12H3z"/><path d="m3 7 9 6 9-6"/>',
+    cal:'<path d="M3 6h18v15H3zM3 10h18M8 3v4M16 3v4"/>',
+    user:'<path d="M20 21v-2a5 5 0 0 0-10 0v2M15 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0"/>'
+  };
+  var TABS = {
+    patient: [
+      {id:'p-home',  label:'Рабочий стол', icon:'home',  title:'Рабочий стол',  sub:'4-я неделя реабилитации'},
+      {id:'p-plan',  label:'Занятия',      icon:'list',  title:'Занятия',       sub:'3 задания на сегодня'},
+      {id:'p-chat',  label:'Врач',         icon:'chat',  mid:true, title:'Чат с врачом', sub:'Ирина Соколова, невролог'},
+      {id:'p-stats', label:'Показатели',   icon:'chart', title:'Показатели',    sub:'динамика за 4 недели'},
+      {id:'p-wins',  label:'Достижения',   icon:'star',  title:'Достижения',    sub:'серия 11 дней'}
+    ],
+    doctor: [
+      {id:'d-patients', label:'Пациенты',  icon:'users', title:'Мои пациенты',  sub:'14 человек в программе'},
+      {id:'d-inbox',    label:'Заявки',    icon:'mail',  title:'Заявки и письма', sub:'1 заявка, 3 письма'},
+      {id:'d-schedule', label:'Занятия',   icon:'cal',   mid:true, title:'Время занятий', sub:'расписание на сегодня'},
+      {id:'d-profile',  label:'Профиль',   icon:'user',  title:'Страница врача', sub:'подписи и заключения'}
+    ]
+  };
+  var ALL = {};
+  Object.keys(TABS).forEach(function (role) {
+    TABS[role].forEach(function (t) { t.role = role; ALL[t.id] = t; });
+  });
+
+  var app = document.getElementById('app');
+  var bar = document.getElementById('tabbar');
+  var title = document.getElementById('bar-title');
+  var sub = document.getElementById('bar-sub');
+  var ava = document.getElementById('ava');
+  var screens = document.getElementById('screens');
+
+  function svg(name) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" ' +
+           'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[name] + '</svg>';
+  }
+
+  function render(id) {
+    var tab = ALL[id] || ALL['p-home'];
+    var role = tab.role;
+    app.dataset.role = role;
+    app.style.setProperty('--accent', 'var(--' + (role === 'doctor' ? 'doc' : 'pat') + ')');
+    app.style.setProperty('--accent-soft', 'var(--' + (role === 'doctor' ? 'doc-soft' : 'pat-soft') + ')');
+    app.style.setProperty('--accent-deep', 'var(--' + (role === 'doctor' ? 'doc-deep' : 'pat-deep') + ')');
+
+    Object.keys(ALL).forEach(function (k) {
+      var el = document.querySelector('[data-screen="' + k + '"]');
+      if (el) el.hidden = (k !== tab.id);
+    });
+
+    title.textContent = tab.title;
+    sub.textContent = tab.sub;
+    ava.textContent = role === 'doctor' ? 'ИС' : 'А';
+
+    bar.innerHTML = TABS[role].map(function (t) {
+      return '<a href="#' + t.id + '" class="' + (t.mid ? 'mid ' : '') +
+             (t.id === tab.id ? 'on' : '') + '">' + svg(t.icon) +
+             '<span>' + t.label + '</span></a>';
+    }).join('');
+
+    document.querySelectorAll('#roles a').forEach(function (a) {
+      a.classList.toggle('on', a.dataset.role === role);
+    });
+    screens.scrollTop = 0;
+  }
+
+  function route() {
+    var id = (location.hash || '').replace('#', '');
+    render(ALL[id] ? id : 'p-home');
+  }
+  window.addEventListener('hashchange', route);
+  route();
+
+  // отметка выполненного задания
+  document.addEventListener('click', function (e) {
+    var task = e.target.closest('.task');
+    if (task) {
+      task.setAttribute('aria-pressed', task.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+      return;
+    }
+    var chip = e.target.closest('.chip');
+    if (chip) {
+      var group = chip.closest('.chips');
+      group.querySelectorAll('.chip').forEach(function (c) { c.setAttribute('aria-pressed', 'false'); });
+      chip.setAttribute('aria-pressed', 'true');
+      return;
+    }
+    var demo = e.target.closest('[data-demo]');
+    if (demo) {
+      var note = document.getElementById('note');
+      note.textContent = demo.dataset.demo + '.';
+      setTimeout(function () {
+        note.innerHTML = 'Прототип: нижние кнопки — обычные ссылки, адрес меняется ' +
+          '(<code>#p-plan</code>, <code>#d-inbox</code>), работают «назад» и «вперёд» в браузере. ' +
+          'Данные вымышленные.';
+      }, 2600);
+    }
+  });
+
+  var form = document.getElementById('chatForm');
+  if (form) {
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var input = document.getElementById('chatInput');
+      var text = input.value.trim();
+      if (!text) return;
+      var wrap = document.createElement('div');
+      wrap.className = 'msg me';
+      wrap.innerHTML = '<span class="b"></span>';
+      wrap.querySelector('.b').textContent = text;
+      form.parentNode.insertBefore(wrap, form);
+      input.value = '';
+      screens.scrollTop = screens.scrollHeight;
+    });
+  }
+})();
+</script>
+</body>
+</html>
